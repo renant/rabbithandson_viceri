@@ -24,16 +24,35 @@ namespace ChatRoom
 
                 new Thread(() =>
                 {
-
                     bus.Consume(myQueueMessages, (body, properties, info) =>
                     {
                         var response = Encoding.UTF8.GetString(body);
                         var message = JsonConvert.DeserializeObject<Message>(response);
                         //print message
                     });
-
                 }).Start();
+
+                Console.WriteLine("Hey! Say your name to enter in chat room!");
+                Console.Write("Name: ");
+                var userName = Console.ReadLine();
+                Console.WriteLine("Now at any time enter your message: ");
+
+                while (true)
+                {
+                    var typedMessage = Console.ReadLine();
+                    ClearLine();
+                    var json = JsonConvert.SerializeObject(new Message(_userId, userName, typedMessage));
+                    var body = Encoding.UTF8.GetBytes(json);
+                    bus.Publish(exchange, "", false, new MessageProperties() { }, body);
+                }
             }
+        }
+
+        private static void ClearLine()
+        {
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
         }
     }
 }
