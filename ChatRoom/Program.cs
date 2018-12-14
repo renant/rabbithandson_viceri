@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using EasyNetQ;
+using EasyNetQ.Management.Client;
 using EasyNetQ.Topology;
 using Newtonsoft.Json;
 
@@ -9,7 +11,8 @@ namespace ChatRoom
 {
     class Program
     {
-        private static Guid _userId = Guid.NewGuid();
+        private static readonly Guid _userId = Guid.NewGuid();
+        private static ManagementClient _client;
         private static string _myQueueName;
 
         static void Main(string[] args)
@@ -18,6 +21,16 @@ namespace ChatRoom
 
             using (var bus = RabbitHutch.CreateBus("amqp://llyajxqz:D9Za_TFzDeYpWVsMXTd2yIH3rdhaGRlk@buffalo.rmq.cloudamqp.com/llyajxqz").Advanced)
             {
+                System.AppDomain.CurrentDomain.ProcessExit += (s, e) =>
+                {
+                    CleanUp();
+                };
+
+                Console.CancelKeyPress += (a, b) =>
+                {
+                    CleanUp();
+                };
+
                 var exchange = bus.ExchangeDeclare("my_exchange_fanout", ExchangeType.Fanout);
                 var myQueueMessages = bus.QueueDeclare(_myQueueName);
                 bus.Bind(exchange, myQueueMessages, "");
@@ -46,6 +59,12 @@ namespace ChatRoom
                     bus.Publish(exchange, "", false, new MessageProperties() { }, body);
                 }
             }
+        }
+
+        private static void CleanUp()
+        {
+            var deleteQueue = _client.GetQueuesAsync().Result.FirstOrDefault(x => x.Name == _myQueueName);
+            _client.DeleteQueueAsync(deleteQueue).Wait();
         }
 
         private static void ClearLine()
