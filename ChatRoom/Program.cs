@@ -17,6 +17,7 @@ namespace ChatRoom
 
         static void Main(string[] args)
         {
+            _client = new ManagementClient("buffalo.rmq.cloudamqp.com", "llyajxqz", "D9Za_TFzDeYpWVsMXTd2yIH3rdhaGRlk");
             _myQueueName = $"messages_{_userId}";
 
             using (var bus = RabbitHutch.CreateBus("amqp://llyajxqz:D9Za_TFzDeYpWVsMXTd2yIH3rdhaGRlk@buffalo.rmq.cloudamqp.com/llyajxqz").Advanced)
