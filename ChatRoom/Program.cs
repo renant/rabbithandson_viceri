@@ -28,7 +28,7 @@ namespace ChatRoom
                     {
                         var response = Encoding.UTF8.GetString(body);
                         var message = JsonConvert.DeserializeObject<Message>(response);
-                        //print message
+                        PrintMessage(message);
                     });
                 }).Start();
 
@@ -53,6 +53,30 @@ namespace ChatRoom
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.Write(new string(' ', Console.WindowWidth));
             Console.SetCursorPosition(0, Console.CursorTop - 1);
+        }
+
+        private static void PrintMessage(Message message)
+        {
+            if (string.IsNullOrWhiteSpace(message.Content)) return;
+
+            if (message.UserId == _userId)
+                PrintYourMessage(message);
+            else
+                PrintOtherMessage(message);
+        }
+
+        private static void PrintOtherMessage(Message message)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"{message.UserName}: {message.Content}");
+            Console.ResetColor();
+        }
+
+        private static void PrintYourMessage(Message message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Você: {message.Content}");
+            Console.ResetColor();
         }
     }
 }
